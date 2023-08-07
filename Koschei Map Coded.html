@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pin Drop Overlay</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <div class="scroll-container">
+        <div class="image-container">
+            <img src="Koschei.jpg" alt="Your Image" id="main-image">
+            <div id="pin-container"></div>
+        </div>
+    </div>
+
+
+
+
+<style>
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.scroll-container {
+    height: 80vh; /* Adjust the height as needed */
+    overflow: scroll;
+}
+
+.image-container {
+    position: relative;
+}
+
+.pin {
+    position: absolute;
+    width: 20px;
+    height: 30px;
+    cursor: pointer;
+}
+
+.pin.red svg {
+    fill: #ff0000;
+}
+
+.pin.green svg {
+    fill: #00ff00;
+}
+
+.pin.selected svg {
+    fill: #fff; /* Change the fill color to indicate selection */
+    stroke: #ff0000; /* Add a stroke to the selected pin */
+    stroke-width: 1.5px;
+}
+
+
+</style>
+
+
+
+
+  <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const pinContainer = document.getElementById('pin-container');
+    const mainImage = document.getElementById('main-image');
+    let pins = { red: [], green: [] };
+    let activeColor = 'red';
+
+    async function fetchPinsFromGist() {
+        try {
+            const gistId = '213b2a6ec1225685b1ee3c5fc7e9bcd0'; // Replace with your Gist ID
+            const response = await fetch(`https://api.github.com/gists/${gistId}`);
+            const gistData = await response.json();
+            pins = JSON.parse(gistData.files['pin-data.json'].content);
+            updatePinsOnPage();
+        } catch (error) {
+            console.error('Error fetching pins:', error);
+        }
+    }
+
+    async function savePinsToGist() {
+        try {
+            const gistId = '213b2a6ec1225685b1ee3c5fc7e9bcd0'; // Replace with your Gist ID
+            const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: 'token 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', // Replace with your GitHub access token
+                },
+                body: JSON.stringify({
+                    files: {
+                        'pin-data.json': {
+                            content: JSON.stringify(pins),
+                        },
+                    },
+                }),
+            });
+            const gistData = await response.json();
+            console.log('Pins saved successfully:', gistData);
+        } catch (error) {
+            console.error('Error saving pins:', error);
+        }
+    }
+
+    function updatePinsOnPage() {
+        // Clear all pins from the page
+        const existingPins = document.querySelectorAll('.pin');
+        existingPins.forEach(pin => pin.remove());
+
+        // Add pins from the retrieved data
+        for (const color in pins) {
+            pins[color].forEach(pinData => {
+                const { x, y } = pinData;
+                addPin(x, y, color);
+            });
+        }
+    }
+
+    function addPin(x, y, color) {
+        // ... (rest of the addPin function, unchanged)
+    }
+
+    function clearAllPins() {
+        // ... (rest of the clearAllPins function, unchanged)
+    }
+
+    mainImage.addEventListener('click', (event) => {
+        // ... (rest of the mainImage event listener, unchanged)
+    });
+
+    // Fetch pins data from Gist when the page loads
+    fetchPinsFromGist();
+
+    // Add buttons and place them in the button container at the bottom of the page
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'button-container';
+
+    const redButton = document.createElement('button');
+    redButton.textContent = "Red Pin";
+    redButton.addEventListener('click', () => {
+        activeColor = 'red';
+    });
+    buttonContainer.appendChild(redButton);
+
+    const greenButton = document.createElement('button');
+    greenButton.textContent = "Green Pin";
+    greenButton.addEventListener('click', () => {
+        activeColor = 'green';
+    });
+    buttonContainer.appendChild(greenButton);
+
+    const clearButton = document.createElement('button');
+    clearButton.textContent = "Clear All Pins";
+    clearButton.addEventListener('click', () => {
+        clearAllPins();
+    });
+    buttonContainer.appendChild(clearButton);
+
+    const updateButton = document.createElement('button');
+    updateButton.textContent = "Update Pins";
+    updateButton.addEventListener('click', () => {
+        savePinsToGist();
+    });
+    buttonContainer.appendChild(updateButton);
+
+    document.body.appendChild(buttonContainer);
+});
+
+  </script>
+</body>
+</html>
